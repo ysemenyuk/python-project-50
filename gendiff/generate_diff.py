@@ -1,31 +1,20 @@
 from gendiff.get_data import get_data
+from gendiff.build_ast_diff import build_ast_diff
+from gendiff.formatting import formatting
 
-
-def generate_diff(file_1, file_2):
+def generate_diff(file_1, file_2, formatter = 'stylish'):
     # print('generate_diff', file1, file2)
-    f1 = get_data(file_1)
-    f2 = get_data(file_2)
-    keys = sorted(set(f1) | set(f2))
-    diff = []
-    tab = '  '
+    data1 = get_data(file_1)
+    data2 = get_data(file_2)
 
-    for key in keys:
-        if key not in f1:
-            # print('added:', key)
-            diff.append(f'{tab}+ {key}: {f2.get(key)}')
-        elif key not in f2:
-            # print('deleted:', key)
-            diff.append(f'{tab}- {key}: {f1.get(key)}')
-        elif f1.get(key) != f2.get(key):
-            # print('changed:', key)
-            diff.append(f'{tab}- {key}: {f1.get(key)}')
-            diff.append(f'{tab}+ {key}: {f2.get(key)}')
-        else:
-            # print('equal:', key)
-            diff.append(f'{tab}  {key}: {f1.get(key)}')
+    ast = build_ast_diff(data1, data2)
 
-    result = "\n".join(diff)
-    open_result = '{\n'
-    close_result = '\n}'
+    print(ast)
 
-    return f'{open_result}{result}{close_result}'
+    return formatting(ast, formatter)
+
+    # result = "\n".join(diff)
+    # open_result = '{\n'
+    # close_result = '\n}'
+
+    # return f'{open_result}{result}{close_result}'
