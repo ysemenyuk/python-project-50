@@ -1,5 +1,6 @@
 import json
 
+
 def generate_diff(file1, file2):
     # print('generate_diff', file1, file2)
     f1 = json.load(open(file1))
@@ -10,10 +11,10 @@ def generate_diff(file1, file2):
     tab = '  '
 
     for key in keys:
-        if not key in f1:
+        if key not in f1:
             # print('added:', key)
             result.append(f'{tab}+ {key}: {f2.get(key)}')
-        elif not key in f2:
+        elif key not in f2:
             # print('deleted:', key)
             result.append(f'{tab}- {key}: {f1.get(key)}')
         elif f1.get(key) != f2.get(key):
