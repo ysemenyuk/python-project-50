@@ -4,8 +4,9 @@ import os
 
 
 def get_data(file_path):
-    _, format = os.path.splitext(os.path.normpath(file_path))
-    with open(file_path) as file:
+    full_file_path = os.path.join(os.path.abspath(os.getcwd()), file_path)
+    _, format = os.path.splitext(file_path)
+    with open(full_file_path) as file:
         return parse(file, format)
 
 
