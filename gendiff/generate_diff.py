@@ -1,5 +1,5 @@
-# import json
 from gendiff.get_data import get_data
+
 
 def generate_diff(file_1, file_2):
     # print('generate_diff', file1, file2)
