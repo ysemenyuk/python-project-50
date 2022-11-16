@@ -1,3 +1,6 @@
+import gendiff.constants as const
+
+
 def build_ast_diff(data1, data2):
     keys = sorted(set(data1) | set(data2))
     diff = []
@@ -6,18 +9,18 @@ def build_ast_diff(data1, data2):
         if key not in data1:
             # print('added:', key)
             node = {
-                'name': key,
-                'status': 'added',
-                'value': data2.get(key)
+                const.NAME: key,
+                const.STATUS: const.ADDED,
+                const.VALUE: data2.get(key)
             }
             diff.append(node)
 
         elif key not in data2:
             # print('deleted:', key)
             node = {
-                'name': key,
-                'status': 'deleted',
-                'value': data1.get(key)
+                const.NAME: key,
+                const.STATUS: const.DELETED,
+                const.VALUE: data1.get(key)
             }
             diff.append(node)
 
@@ -26,9 +29,9 @@ def build_ast_diff(data1, data2):
             # print('nested:', key)
             children = build_ast_diff(data1.get(key), data2.get(key))
             node = {
-                'name': key,
-                'status': 'nested',
-                'children': children
+                const.NAME: key,
+                const.STATUS: const.NESTED,
+                const.CHILDREN: children
             }
             diff.append(node)
 
@@ -36,19 +39,19 @@ def build_ast_diff(data1, data2):
             # print('changed:', key, 'old_value', data1.get(key))
             # print('changed:', key, 'new_value', data2.get(key))
             node = {
-                'name': key,
-                'status': 'changed',
-                'old_value': data1.get(key),
-                'new_value': data2.get(key)
+                const.NAME: key,
+                const.STATUS: const.CHANGED,
+                const.OLD_VALUE: data1.get(key),
+                const.NEW_VALUE: data2.get(key)
             }
             diff.append(node)
 
         else:
-            # print('equal:', key)
+            # print('unchanged:', key)
             node = {
-                'name': key,
-                'status': 'unchanged',
-                'value': data2.get(key)
+                const.NAME: key,
+                const.STATUS: const.UNCHANGED,
+                const.VALUE: data2.get(key)
             }
             diff.append(node)
 

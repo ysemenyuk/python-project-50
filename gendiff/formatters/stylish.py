@@ -1,9 +1,14 @@
-signs = {
-    'added': '+',
-    'added': '+',
-    'deleted': '-',
-    'unchanged': ' ',
-    'nested': ' ',
+import gendiff.constants as const
+
+
+SPACES_COUNT = 4
+LINE = '{}  {} {}: {}'
+
+signs_map = {
+    const.ADDED: '+',
+    const.DELETED: '-',
+    const.UNCHANGED: ' ',
+    const.NESTED: ' ',
 }
 
 
@@ -16,47 +21,54 @@ def make_output(lines, multiplier):
     return f'{{\n{result}\n{make_indent(multiplier)}}}'
 
 
-def stringify(value, multiplier, indent):
+def stringify(value, multiplier):
     if isinstance(value, dict):
-        next_multiplier = multiplier + indent
-        ind = make_indent(multiplier)
+        indent = make_indent(multiplier)
+        next_multiplier = multiplier + SPACES_COUNT
         lines = []
         for (name, value) in value.items():
-            val = stringify(value, next_multiplier, indent)
-            lines.append(f'{ind}    {name}: {val}')
+            value = stringify(value, next_multiplier)
+            sign = signs_map.get(const.UNCHANGED)
+            lines.append(LINE.format(indent, sign, name, value))
         return make_output(lines, multiplier)
     elif value is None:
-        return 'null'
+        return const.NULL
     elif value is False:
-        return 'false'
+        return const.FALSE
     elif value is True:
-        return 'true'
+        return const.TRUE
     return value
 
 
-def stylish_formatter(ast, multiplier=0, indent=4):
-    next_multiplier = multiplier + indent
-    ind = make_indent(multiplier)
-    lines = []
-    for node in ast:
-        status = node.get('status')
-        name = node.get("name")
-        sign = signs.get(status)
-        if status == 'nested':
-            val = stylish_formatter(node.get("children"),
-                                    next_multiplier, indent)
-            lines.append(f'{ind}  {sign} {name}: {val}')
-        elif node.get('status') == 'changed':
-            del_sign = signs.get("deleted")
-            add_sign = signs.get("added")
+def stylish_formatter(ast):
+    def iter(ast, multiplier):
+        next_multiplier = multiplier + SPACES_COUNT
+        indent = make_indent(multiplier)
+        lines = []
 
-            old_val = stringify(node.get("old_value"), next_multiplier, indent)
-            new_val = stringify(node.get("new_value"), next_multiplier, indent)
+        for node in ast:
+            status = node.get(const.STATUS)
+            name = node.get(const.NAME)
+            sign = signs_map.get(status)
 
-            lines.append(f'{ind}  {del_sign} {name}: {old_val}')
-            lines.append(f'{ind}  {add_sign} {name}: {new_val}')
-        else:
-            val = stringify(node.get("value"), next_multiplier, indent)
-            lines.append(f'{ind}  {sign} {name}: {val}')
+            if status == const.NESTED:
+                value = iter(node.get(const.CHILDREN), next_multiplier)
+                lines.append(LINE.format(indent, sign, name, value))
 
-    return make_output(lines, multiplier)
+            elif status == const.CHANGED:
+                del_sign = signs_map.get(const.DELETED)
+                add_sign = signs_map.get(const.ADDED)
+
+                old_val = stringify(node.get(const.OLD_VALUE), next_multiplier)
+                new_val = stringify(node.get(const.NEW_VALUE), next_multiplier)
+
+                lines.append(LINE.format(indent, del_sign, name, old_val))
+                lines.append(LINE.format(indent, add_sign, name, new_val))
+
+            else:
+                value = stringify(node.get(const.VALUE), next_multiplier)
+                lines.append(LINE.format(indent, sign, name, value))
+
+        return make_output(lines, multiplier)
+
+    return iter(ast, 0)
