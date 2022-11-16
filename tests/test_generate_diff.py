@@ -1,5 +1,6 @@
 import pytest
 import os
+import types
 from gendiff.generate_diff import generate_diff
 
 
@@ -35,3 +36,6 @@ def test_gendiff_json_formatter():
 def test_parse_files_paths():
     with pytest.raises(Exception):
         generate_diff(f1_json, "wrong_file_path")
+
+def test_func():
+    assert isinstance(generate_diff, types.FunctionType)
