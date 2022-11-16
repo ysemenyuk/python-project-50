@@ -17,6 +17,8 @@ def stringify(value):
         return const.FALSE
     if value is True:
         return const.TRUE
+    if isinstance(value, (int, float)):
+        return f"{value}"
     return f"'{value}'"
 
 
