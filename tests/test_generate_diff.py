@@ -20,12 +20,14 @@ def test_gendiff_stylish_formatter():
         expected = f.read()
         assert generate_diff(f1_json, f2_json) == expected
         assert generate_diff(f1_yml, f2_yml) == expected
-        
+
+
 def test_gendiff_plain_formatter():
     with open(expexted_plain) as f:
         expected = f.read()
         assert generate_diff(f1_json, f2_json, 'plain') == expected
         assert generate_diff(f1_yml, f2_yml, 'plain') == expected
+
 
 def test_gendiff_json_formatter():
     with open(expexted_json) as f:
@@ -33,9 +35,11 @@ def test_gendiff_json_formatter():
         assert generate_diff(f1_json, f2_json, 'json') == expected
         assert generate_diff(f1_yml, f2_yml, 'json') == expected
 
+
 def test_parse_files_paths():
     with pytest.raises(Exception):
         generate_diff(f1_json, "wrong_file_path")
+
 
 def test_func():
     assert isinstance(generate_diff, types.FunctionType)
