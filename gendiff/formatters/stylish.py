@@ -1,59 +1,62 @@
-INDENT = 4
-
 signs = {
-  'added': '+',
-  'added': '+',
-  'deleted': '-',
-  'unchanged': ' ',
-  'nested': ' ',
+    'added': '+',
+    'added': '+',
+    'deleted': '-',
+    'unchanged': ' ',
+    'nested': ' ',
 }
 
-# def make_line(node, multiplier):
-#   status = node.get("status")
-#   if status == 'changed':
-#     lines = [
-#       f'{make_indent(multiplier)}  {signs.get("deleted")} {node.get("name")}: {stringify(node.get("old"), multiplier + INDENT)}',
-#       f'{make_indent(multiplier)}  {signs.get("added")} {node.get("name")}: {stringify(node.get("new"), multiplier + INDENT)}'
-#     ]
-#     return '\n'.join(lines)
-#   return f'{make_indent(multiplier)}  {signs.get(status)} {node.get("name")}: {stringify(node.get("value"), multiplier + INDENT)}'
-
-def stringify(value, multiplier):
-  if not isinstance(value, dict):
-    return value
-  lines = []
-  for (key, value) in value.items():
-    lines.append(f'{make_indent(multiplier)}    {key}: {stringify(value, multiplier + INDENT)}')
-  return make_output(lines, multiplier)
 
 def make_indent(multiplier):
-  return ' ' * multiplier
+    return ' ' * multiplier
+
 
 def make_output(lines, multiplier):
-  result = "\n".join(lines)
-  return f'{{\n{result}\n{make_indent(multiplier)}}}'
-  
-# def flatten(lst):
-#   res = []
-#   for item in lst:
-#     if isinstance(item, list):
-#       res.extend(flatten(item))
-#     else:
-#       res.append(item)
-#   return res
+    result = "\n".join(lines)
+    return f'{{\n{result}\n{make_indent(multiplier)}}}'
 
 
-def stylish(ast, multiplier = 0):
-  next_multiplier = multiplier + INDENT
-  lines = []
-  for node in ast:
-    status = node.get('status')
-    if status == 'nested':
-      lines.append(f'{make_indent(multiplier)}  {signs.get(status)} {node.get("name")}: {stylish(node.get("children"), next_multiplier)}')
-    elif node.get('status') == 'changed':
-      lines.append(f'{make_indent(multiplier)}  {signs.get("deleted")} {node.get("name")}: {stringify(node.get("old_value"), next_multiplier)}')
-      lines.append(f'{make_indent(multiplier)}  {signs.get("added")} {node.get("name")}: {stringify(node.get("new_value"), next_multiplier)}')
-    else:
-      lines.append(f'{make_indent(multiplier)}  {signs.get(status)} {node.get("name")}: {stringify(node.get("value"), next_multiplier)}')
-      
-  return make_output(lines, multiplier)
+def stringify(value, multiplier, indent):
+    if isinstance(value, dict):
+        next_multiplier = multiplier + indent
+        ind = make_indent(multiplier)
+        lines = []
+        for (name, value) in value.items():
+            val = stringify(value, next_multiplier, indent)
+            lines.append(f'{ind}    {name}: {val}')
+        return make_output(lines, multiplier)
+    elif value is None:
+        return 'null'
+    elif value is False:
+        return 'false'
+    elif value is True:
+        return 'true'
+    return value
+
+
+def stylish_formatter(ast, multiplier=0, indent=4):
+    next_multiplier = multiplier + indent
+    ind = make_indent(multiplier)
+    lines = []
+    for node in ast:
+        status = node.get('status')
+        name = node.get("name")
+        sign = signs.get(status)
+        if status == 'nested':
+            val = stylish_formatter(node.get("children"),
+                                    next_multiplier, indent)
+            lines.append(f'{ind}  {sign} {name}: {val}')
+        elif node.get('status') == 'changed':
+            del_sign = signs.get("deleted")
+            add_sign = signs.get("added")
+
+            old_val = stringify(node.get("old_value"), next_multiplier, indent)
+            new_val = stringify(node.get("new_value"), next_multiplier, indent)
+
+            lines.append(f'{ind}  {del_sign} {name}: {old_val}')
+            lines.append(f'{ind}  {add_sign} {name}: {new_val}')
+        else:
+            val = stringify(node.get("value"), next_multiplier, indent)
+            lines.append(f'{ind}  {sign} {name}: {val}')
+
+    return make_output(lines, multiplier)
