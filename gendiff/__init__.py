@@ -1,2 +1,2 @@
 # flake8: noqa: F401
-import gendiff.generate_diff
+from gendiff.generate_diff import generate_diff
